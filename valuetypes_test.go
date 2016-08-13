@@ -335,3 +335,59 @@ func TestStringPattern(t *testing.T) {
 		},
 	}.Test(t)
 }
+
+func TestStringEnum(t *testing.T) {
+	testCase{
+		Schema: StringEnum{
+			MetaData: MetaData{
+				Title:       "my-title",
+				Description: "my-description",
+			},
+			Values: []string{
+				"a", "b", "c--",
+			},
+		},
+		Match: `{
+      "type": "string",
+      "title": "my-title",
+      "description": "my-description",
+      "enum": ["a", "b", "c--"]
+    }`,
+		Valid: []string{
+			"\"a\"", "\"b\"", "\"c--\"",
+		},
+		Invalid: []string{
+			"242", "-254", "{}", "[]", "null", "true", "false", "\"\"", "\"-\"",
+			"\"asda dsfsf\"", "\"asd4\"", "\"A\"", "\"azS\"", "\"c\"", "\"d\"",
+			"\"f\"", "\"\"",
+		},
+		TypeMatch: []interface{}{
+			pString,
+		},
+		TypeMismatch: []interface{}{
+			aInt8,
+			aInt16,
+			aInt32,
+			aInt64,
+			aUint8,
+			aUint16,
+			aUint32,
+			aUint64,
+			aString,
+			aFloat32,
+			aFloat64,
+			aBool,
+			pInt8,
+			pInt16,
+			pInt32,
+			pInt64,
+			pUint8,
+			pUint16,
+			pUint32,
+			pUint64,
+			pFloat32,
+			pFloat64,
+			pBool,
+		},
+	}.Test(t)
+}

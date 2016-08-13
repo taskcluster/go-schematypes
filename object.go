@@ -191,15 +191,6 @@ func (o Object) mapStruct(data map[string]interface{}, target reflect.Value) err
 	return nil
 }
 
-func stringContains(list []string, element string) bool {
-	for _, s := range list {
-		if s == element {
-			return true
-		}
-	}
-	return false
-}
-
 // Filter will create a new map with any additional properties that aren't
 // allowed by the schema removed. This doesn't modify the data parameter, but
 // returns a new map.

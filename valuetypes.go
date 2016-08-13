@@ -282,3 +282,57 @@ func (s String) Map(data interface{}, target interface{}) error {
 		return ErrTypeMismatch
 	}
 }
+
+// StringEnum schema type for enums of strings.
+type StringEnum struct {
+	MetaData
+	Values []string
+}
+
+// Schema returns a JSON representation of the schema.
+func (s StringEnum) Schema() map[string]interface{} {
+	m := s.schema()
+	m["type"] = "string"
+	m["enum"] = s.Values
+	return m
+}
+
+// Validate the given data, this will return nil if data satisfies this schema.
+// Otherwise, Validate(data) returns a list of ValidationIssues.
+func (s StringEnum) Validate(data interface{}) *ValidationError {
+	value, ok := data.(string)
+	if !ok {
+		return singleIssue("", "Expected a string at {path}")
+	}
+
+	if !stringContains(s.Values, value) {
+		e := &ValidationError{}
+		e.addIssue("",
+			"Value '%s' at {path} is not valid for the enum with options: %v",
+			value, s.Values)
+		return e
+	}
+
+	return nil
+}
+
+// Map takes data, validates and maps it into the target reference.
+func (s StringEnum) Map(data interface{}, target interface{}) error {
+	if err := s.Validate(data); err != nil {
+		return err
+	}
+
+	ptr := reflect.ValueOf(target)
+	if ptr.Kind() != reflect.Ptr {
+		return ErrTypeMismatch
+	}
+	val := ptr.Elem()
+
+	switch val.Kind() {
+	case reflect.String:
+		val.SetString(data.(string))
+		return nil
+	default:
+		return ErrTypeMismatch
+	}
+}
