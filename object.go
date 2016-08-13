@@ -2,6 +2,7 @@ package schematypes
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"regexp"
 	"strings"
@@ -188,4 +189,78 @@ func (o Object) mapStruct(data map[string]interface{}, target reflect.Value) err
 	}
 
 	return nil
+}
+
+func stringContains(list []string, element string) bool {
+	for _, s := range list {
+		if s == element {
+			return true
+		}
+	}
+	return false
+}
+
+// Filter will create a new map with any additional properties that aren't
+// allowed by the schema removed. This doesn't modify the data parameter, but
+// returns a new map.
+//
+// Note: Naturally this have no effect if AdditionalProperties is true.
+func (o Object) Filter(data map[string]interface{}) map[string]interface{} {
+	value := make(map[string]interface{})
+	for k, v := range data {
+		if _, ok := o.Properties[k]; ok || o.AdditionalProperties {
+			value[k] = v
+		}
+	}
+	return value
+}
+
+// Merge multiple object schemas, this will create an object schema with all the
+// properties from the schemas given, and all the required properties as the
+// given object schemas have.
+//
+// This will fail if any schema has AdditionalProperties: true, or if any two
+// schemas specifies the same key with different schemas.
+//
+// When using this to merge multiple schemas into one schema, the Object.Filter
+// method may be useful to strip forbidden properties such that the subset of
+// values matching a specific schema used can be extract for use with
+// Object.Validate or Object.Map.
+func Merge(a ...Object) (Object, error) {
+	props := make(map[string]Schema)
+	required := []string{}
+
+	for _, obj := range a {
+		// Return an error if AdditionalProperties is set
+		if obj.AdditionalProperties {
+			return Object{}, fmt.Errorf("AdditionalProperties is true for %#v", obj)
+		}
+
+		// Merge the properties from all objects, returning an error if there is
+		// two objects with different schemas for the same property
+		for k, schema := range obj.Properties {
+			existing, ok := props[k]
+			if !ok {
+				props[k] = schema
+			} else if !reflect.DeepEqual(schema, existing) {
+				return Object{}, fmt.Errorf(
+					"The key '%s' is defined with different schemas %#v and %#v",
+					k, schema, existing,
+				)
+			}
+		}
+
+		// Merge the lists of requried properties
+		for _, k := range obj.Required {
+			if !stringContains(required, k) {
+				required = append(required, k)
+			}
+		}
+	}
+
+	return Object{
+		Properties:           props,
+		Required:             required,
+		AdditionalProperties: false,
+	}, nil
 }
