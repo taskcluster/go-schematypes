@@ -1,5 +1,6 @@
 Package `schematypes`
 ====================
+[![Build Status](https://travis-ci.org/taskcluster/go-schematypes.svg?branch=master)](https://travis-ci.org/taskcluster/go-schematypes)
 
 Package schematypes provides types for constructing JSON schemas
 programmatically. This is useful when having a plugin architecture that
