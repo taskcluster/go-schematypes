@@ -286,14 +286,14 @@ func (s String) Map(data interface{}, target interface{}) error {
 // StringEnum schema type for enums of strings.
 type StringEnum struct {
 	MetaData
-	Values []string
+	Options []string
 }
 
 // Schema returns a JSON representation of the schema.
 func (s StringEnum) Schema() map[string]interface{} {
 	m := s.schema()
 	m["type"] = "string"
-	m["enum"] = s.Values
+	m["enum"] = s.Options
 	return m
 }
 
@@ -305,11 +305,11 @@ func (s StringEnum) Validate(data interface{}) *ValidationError {
 		return singleIssue("", "Expected a string at {path}")
 	}
 
-	if !stringContains(s.Values, value) {
+	if !stringContains(s.Options, value) {
 		e := &ValidationError{}
 		e.addIssue("",
 			"Value '%s' at {path} is not valid for the enum with options: %v",
-			value, s.Values)
+			value, s.Options)
 		return e
 	}
 

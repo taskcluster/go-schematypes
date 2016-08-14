@@ -343,7 +343,7 @@ func TestStringEnum(t *testing.T) {
 				Title:       "my-title",
 				Description: "my-description",
 			},
-			Values: []string{
+			Options: []string{
 				"a", "b", "c--",
 			},
 		},
