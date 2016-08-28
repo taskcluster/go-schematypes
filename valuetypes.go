@@ -2,8 +2,16 @@ package schematypes
 
 import (
 	"math"
+	"net/url"
 	"reflect"
 	"regexp"
+)
+
+const (
+	typeInteger = "integer"
+	typeString  = "string"
+	typeNumber  = "number"
+	typeBoolean = "boolean"
 )
 
 // The Integer struct represents a JSON schema for an integer.
@@ -16,7 +24,7 @@ type Integer struct {
 // Schema returns a JSON representation of the schema.
 func (i Integer) Schema() map[string]interface{} {
 	m := i.schema()
-	m["type"] = "integer"
+	m["type"] = typeInteger
 	if i.Minimum != math.MinInt64 {
 		m["minimum"] = i.Minimum
 	}
@@ -114,7 +122,7 @@ type Number struct {
 // Schema returns a JSON representation of the schema.
 func (n Number) Schema() map[string]interface{} {
 	m := n.schema()
-	m["type"] = "number"
+	m["type"] = typeNumber
 	if n.Minimum != -math.MaxFloat64 {
 		m["minimum"] = n.Minimum
 	}
@@ -171,7 +179,7 @@ type Boolean struct{ MetaData }
 // Schema returns a JSON representation of the schema.
 func (b Boolean) Schema() map[string]interface{} {
 	m := b.schema()
-	m["type"] = "boolean"
+	m["type"] = typeBoolean
 	return m
 }
 
@@ -216,7 +224,7 @@ type String struct {
 // Schema returns a JSON representation of the schema.
 func (s String) Schema() map[string]interface{} {
 	m := s.schema()
-	m["type"] = "string"
+	m["type"] = typeString
 	if s.MinimumLength != 0 {
 		m["minLength"] = s.MinimumLength
 	}
@@ -292,7 +300,7 @@ type StringEnum struct {
 // Schema returns a JSON representation of the schema.
 func (s StringEnum) Schema() map[string]interface{} {
 	m := s.schema()
-	m["type"] = "string"
+	m["type"] = typeString
 	m["enum"] = s.Options
 	return m
 }
@@ -331,6 +339,75 @@ func (s StringEnum) Map(data interface{}, target interface{}) error {
 	switch val.Kind() {
 	case reflect.String:
 		val.SetString(data.(string))
+		return nil
+	default:
+		return ErrTypeMismatch
+	}
+}
+
+// URI schema type for strings with format: uri.
+type URI struct {
+	MetaData
+	Options []string
+}
+
+// Schema returns a JSON representation of the schema.
+func (s URI) Schema() map[string]interface{} {
+	m := s.schema()
+	m["type"] = typeString
+	m["format"] = "uri"
+	return m
+}
+
+// Validate the given data, this will return nil if data satisfies this schema.
+// Otherwise, Validate(data) returns a ValidationError instance.
+func (s URI) Validate(data interface{}) error {
+	value, ok := data.(string)
+	if !ok {
+		return singleIssue("", "Expected a string at {path}")
+	}
+
+	u, err := url.Parse(value)
+	if err != nil || u.Scheme == "" {
+		e := &ValidationError{}
+		e.addIssue("", "Value '%s' at {path} is not a valid URI", value)
+		return e
+	}
+
+	return nil
+}
+
+var typeOfURL = reflect.TypeOf((*url.URL)(nil)).Elem()
+
+// Map takes data, validates and maps it into the target reference.
+func (s URI) Map(data interface{}, target interface{}) error {
+	if err := s.Validate(data); err != nil {
+		return err
+	}
+
+	ptr := reflect.ValueOf(target)
+	if ptr.Kind() != reflect.Ptr {
+		return ErrTypeMismatch
+	}
+	val := ptr.Elem()
+
+	switch val.Kind() {
+	case reflect.String:
+		val.SetString(data.(string))
+		return nil
+	case reflect.Ptr:
+		if val.Type().Elem() != typeOfURL {
+			return ErrTypeMismatch
+		}
+		u, _ := url.Parse(data.(string))
+		val.Set(reflect.ValueOf(u))
+		return nil
+	case reflect.Struct:
+		if val.Type() != typeOfURL {
+			return ErrTypeMismatch
+		}
+		u, _ := url.Parse(data.(string))
+		val.Set(reflect.ValueOf(*u))
 		return nil
 	default:
 		return ErrTypeMismatch
