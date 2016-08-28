@@ -24,8 +24,8 @@ func (a Array) Schema() map[string]interface{} {
 }
 
 // Validate the given data, this will return nil if data satisfies this schema.
-// Otherwise, Validate(data) returns a list of ValidationIssues.
-func (a Array) Validate(data interface{}) *ValidationError {
+// Otherwise, Validate(data) returns a ValidationError instance.
+func (a Array) Validate(data interface{}) error {
 	value := reflect.ValueOf(data)
 
 	if value.Kind() != reflect.Array && value.Kind() != reflect.Slice {

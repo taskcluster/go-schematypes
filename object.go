@@ -50,8 +50,8 @@ func formatKeyPath(key string) string {
 }
 
 // Validate the given data, this will return nil if data satisfies this schema.
-// Otherwise, Validate(data) returns a list of ValidationIssues.
-func (o Object) Validate(data interface{}) *ValidationError {
+// Otherwise, Validate(data) returns a ValidationError instance.
+func (o Object) Validate(data interface{}) error {
 	value, ok := data.(map[string]interface{})
 	if !ok {
 		return singleIssue("", "Expected object type at {path}")

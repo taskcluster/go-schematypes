@@ -27,8 +27,8 @@ func (i Integer) Schema() map[string]interface{} {
 }
 
 // Validate the given data, this will return nil if data satisfies this schema.
-// Otherwise, Validate(data) returns a list of ValidationIssues.
-func (i Integer) Validate(data interface{}) *ValidationError {
+// Otherwise, Validate(data) returns a ValidationError instance.
+func (i Integer) Validate(data interface{}) error {
 	value, ok := data.(float64)
 	if !ok || float64(int64(value)) != value {
 		return singleIssue("", "Expected an integer at {path}")
@@ -125,8 +125,8 @@ func (n Number) Schema() map[string]interface{} {
 }
 
 // Validate the given data, this will return nil if data satisfies this schema.
-// Otherwise, Validate(data) returns a list of ValidationIssues.
-func (n Number) Validate(data interface{}) *ValidationError {
+// Otherwise, Validate(data) returns a ValidationError instance.
+func (n Number) Validate(data interface{}) error {
 	value, ok := data.(float64)
 	if !ok {
 		return singleIssue("", "Expected a number at {path}")
@@ -176,8 +176,8 @@ func (b Boolean) Schema() map[string]interface{} {
 }
 
 // Validate the given data, this will return nil if data satisfies this schema.
-// Otherwise, Validate(data) returns a list of ValidationIssues.
-func (b Boolean) Validate(data interface{}) *ValidationError {
+// Otherwise, Validate(data) returns a ValidationError instance.
+func (b Boolean) Validate(data interface{}) error {
 	if _, ok := data.(bool); !ok {
 		return singleIssue("", "Expected a boolean at {path}")
 	}
@@ -230,8 +230,8 @@ func (s String) Schema() map[string]interface{} {
 }
 
 // Validate the given data, this will return nil if data satisfies this schema.
-// Otherwise, Validate(data) returns a list of ValidationIssues.
-func (s String) Validate(data interface{}) *ValidationError {
+// Otherwise, Validate(data) returns a ValidationError instance.
+func (s String) Validate(data interface{}) error {
 	value, ok := data.(string)
 	if !ok {
 		return singleIssue("", "Expected a string at {path}")
@@ -298,8 +298,8 @@ func (s StringEnum) Schema() map[string]interface{} {
 }
 
 // Validate the given data, this will return nil if data satisfies this schema.
-// Otherwise, Validate(data) returns a list of ValidationIssues.
-func (s StringEnum) Validate(data interface{}) *ValidationError {
+// Otherwise, Validate(data) returns a ValidationError instance.
+func (s StringEnum) Validate(data interface{}) error {
 	value, ok := data.(string)
 	if !ok {
 		return singleIssue("", "Expected a string at {path}")

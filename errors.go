@@ -46,11 +46,19 @@ func (e *ValidationError) addIssues(err *ValidationError) {
 	e.issues = append(e.issues, err.issues...)
 }
 
-func (e *ValidationError) addIssuesWithPrefix(err *ValidationError, prefix string, args ...interface{}) {
+func (e *ValidationError) addIssuesWithPrefix(err error, prefix string, args ...interface{}) {
 	if err == nil {
 		return
 	}
-	for _, issue := range err.issues {
+	if err, ok := err.(*ValidationError); ok {
+		for _, issue := range err.issues {
+			e.issues = append(e.issues, issue.Prefix(prefix, args...))
+		}
+	} else {
+		issue := ValidationIssue{
+			message: fmt.Sprintf("Error: %s at {path}", err.Error()),
+			path:    "",
+		}
 		e.issues = append(e.issues, issue.Prefix(prefix, args...))
 	}
 }
