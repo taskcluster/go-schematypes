@@ -41,6 +41,64 @@ func TestObject(t *testing.T) {
 			"{\"int\": 4}",
 		},
 		Invalid: []string{
+			"[]", "{}",
+		},
+		TypeMatch: []interface{}{
+			&struct {
+				Int int `json:"int"`
+			}{},
+		},
+		TypeMismatch: []interface{}{
+			&struct {
+				Int int `json:"wrong"`
+			}{},
+			pInt32,
+			&[]int8{},
+			&[]struct{}{},
+			&[]string{},
+			&[]int32{},
+			&[]int{},
+		},
+	}.Test(t)
+}
+
+func TestOptionalPropertyObject(t *testing.T) {
+	testCase{
+		Schema: Object{
+			MetaData: MetaData{
+				Title:       "my-title-1",
+				Description: "my-description-1",
+			},
+			Properties: Properties{
+				"int": Integer{
+					MetaData: MetaData{
+						Title:       "my-title-2",
+						Description: "my-description-2",
+					},
+					Minimum: -240,
+					Maximum: 240,
+				},
+			},
+		},
+		Match: `{
+      "type": "object",
+      "title": "my-title-1",
+      "description": "my-description-1",
+      "properties": {
+        "int": {
+          "type": "integer",
+          "title": "my-title-2",
+          "description": "my-description-2",
+          "minimum": -240,
+          "maximum": 240
+        }
+      },
+      "additionalProperties": false
+    }`,
+		Valid: []string{
+			"{\"int\": 4}", "{}",
+		},
+		Invalid: []string{
 			"[]",
 		},
 		TypeMatch: []interface{}{

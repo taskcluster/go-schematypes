@@ -61,7 +61,11 @@ func (o Object) Validate(data interface{}) error {
 
 	// Test properties
 	for p, s := range o.Properties {
-		if err := s.Validate(value[p]); err != nil {
+		v, ok := value[p]
+		if !ok {
+			continue
+		}
+		if err := s.Validate(v); err != nil {
 			e.addIssuesWithPrefix(err, formatKeyPath(p))
 		}
 	}
