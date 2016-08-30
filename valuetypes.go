@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"reflect"
 	"regexp"
+	"time"
 )
 
 const (
@@ -408,6 +409,81 @@ func (s URI) Map(data interface{}, target interface{}) error {
 		}
 		u, _ := url.Parse(data.(string))
 		val.Set(reflect.ValueOf(*u))
+		return nil
+	default:
+		return ErrTypeMismatch
+	}
+}
+
+// DateTime schema type for strings with format: date-time.
+type DateTime struct {
+	MetaData
+}
+
+// Schema returns a JSON representation of the schema.
+func (d DateTime) Schema() map[string]interface{} {
+	m := d.schema()
+	m["type"] = typeString
+	m["format"] = "date-time"
+	return m
+}
+
+func parseDateTime(input string) (time.Time, error) {
+	if result, err := time.Parse(time.RFC3339Nano, input); err == nil {
+		return result, nil
+	}
+	return time.Parse(time.RFC3339, input)
+}
+
+// Validate the given data, this will return nil if data satisfies this schema.
+// Otherwise, Validate(data) returns a ValidationError instance.
+func (d DateTime) Validate(data interface{}) error {
+	value, ok := data.(string)
+	if !ok {
+		return singleIssue("", "Expected a string at {path}")
+	}
+
+	// Try to parse date
+	if _, err := parseDateTime(value); err != nil {
+		e := &ValidationError{}
+		e.addIssue("", "Value '%s' at {path} is not a valid date-time string", value)
+		return e
+	}
+
+	return nil
+}
+
+var typeOfTime = reflect.TypeOf((*time.Time)(nil)).Elem()
+
+// Map takes data, validates and maps it into the target reference.
+func (d DateTime) Map(data interface{}, target interface{}) error {
+	if err := d.Validate(data); err != nil {
+		return err
+	}
+
+	ptr := reflect.ValueOf(target)
+	if ptr.Kind() != reflect.Ptr {
+		return ErrTypeMismatch
+	}
+	val := ptr.Elem()
+
+	switch val.Kind() {
+	case reflect.String:
+		val.SetString(data.(string))
+		return nil
+	case reflect.Ptr:
+		if val.Type().Elem() != typeOfTime {
+			return ErrTypeMismatch
+		}
+		t, _ := parseDateTime(data.(string))
+		val.Set(reflect.ValueOf(&t))
+		return nil
+	case reflect.Struct:
+		if val.Type() != typeOfTime {
+			return ErrTypeMismatch
+		}
+		t, _ := parseDateTime(data.(string))
+		val.Set(reflect.ValueOf(t))
 		return nil
 	default:
 		return ErrTypeMismatch
