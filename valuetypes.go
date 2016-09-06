@@ -38,16 +38,28 @@ func (i Integer) Schema() map[string]interface{} {
 // Validate the given data, this will return nil if data satisfies this schema.
 // Otherwise, Validate(data) returns a ValidationError instance.
 func (i Integer) Validate(data interface{}) error {
-	value, ok := data.(float64)
-	if !ok || float64(int64(value)) != value {
+	var value int64
+	v := reflect.ValueOf(data)
+	switch v.Kind() {
+	case reflect.Float32, reflect.Float64:
+		if float64(int64(v.Float())) != v.Float() {
+			return singleIssue("", "Expected an integer at {path}")
+		}
+		value = int64(v.Float())
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		value = v.Int()
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		value = int64(v.Uint())
+	default:
 		return singleIssue("", "Expected an integer at {path}")
 	}
-	if int64(value) < i.Minimum {
+
+	if value < i.Minimum {
 		return singleIssue("", "Integer %d at {path} is less than minimum %d",
 			value, i.Minimum,
 		)
 	}
-	if int64(value) > i.Maximum {
+	if value > i.Maximum {
 		return singleIssue("", "Integer %d at {path} is larger than maximum %d",
 			value, i.Maximum,
 		)
@@ -68,6 +80,19 @@ func (i Integer) Map(data interface{}, target interface{}) error {
 	}
 	val := ptr.Elem()
 
+	var value int64
+	v := reflect.ValueOf(data)
+	switch v.Kind() {
+	case reflect.Float32, reflect.Float64:
+		value = int64(v.Float())
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		value = v.Int()
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		value = int64(v.Uint())
+	default:
+		panic("internal error -- validate should have caught this")
+	}
+
 	switch val.Kind() {
 	case reflect.Int8:
 		if i.Minimum < math.MinInt8 && i.Maximum > math.MaxInt8 {
@@ -85,7 +110,7 @@ func (i Integer) Map(data interface{}, target interface{}) error {
 		}
 		fallthrough
 	case reflect.Int64:
-		val.SetInt(int64(data.(float64)))
+		val.SetInt(value)
 		return nil
 	case reflect.Uint8:
 		if i.Minimum < 0 && i.Maximum > math.MaxUint8 {
@@ -106,7 +131,7 @@ func (i Integer) Map(data interface{}, target interface{}) error {
 		if i.Minimum < 0 {
 			return ErrTypeMismatch
 		}
-		val.SetUint(uint64(data.(float64)))
+		val.SetUint(uint64(value))
 		return nil
 	default:
 		return ErrTypeMismatch
