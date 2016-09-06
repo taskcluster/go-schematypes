@@ -109,9 +109,39 @@ func (o Object) Map(data, target interface{}) error {
 	if val.Kind() == reflect.Struct {
 		return o.mapStruct(data.(map[string]interface{}), val)
 	}
+	if val.Kind() == reflect.Map && val.Type().Key().Kind() == reflect.String {
+		// Create a new map
+		val.Set(reflect.MakeMap(val.Type()))
+		// Set (key, value) pairs in the result
+		valueType := val.Type().Elem()
+		for key, value := range data.(map[string]interface{}) {
+			var targetValue reflect.Value
+			var resultValue reflect.Value
+			if valueType.Kind() == reflect.Ptr {
+				targetValue = reflect.New(valueType)
+				resultValue = targetValue
+			} else if valueType == typeOfEmptyInterface {
+				val.SetMapIndex(reflect.ValueOf(key), reflect.ValueOf(value))
+				continue
+			} else {
+				targetValue = reflect.New(valueType)
+				resultValue = targetValue.Elem()
+			}
 
-	// TODO: Add support for mapping to a map[string]interface{}
-	// TODO: Add support for mapping to a map[string]<T>
+			schema := o.Properties[key]
+			if schema == nil {
+				continue // can't map if there is no schema
+			}
+			if err := schema.Map(value, targetValue.Interface()); err != nil {
+				if err != ErrTypeMismatch {
+					panic("Internal error, this should have been caught in Validate()")
+				}
+				return err
+			}
+			val.SetMapIndex(reflect.ValueOf(key), resultValue)
+		}
+		return nil
+	}
 
 	return ErrTypeMismatch
 }

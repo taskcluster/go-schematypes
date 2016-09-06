@@ -47,6 +47,9 @@ func TestObject(t *testing.T) {
 			&struct {
 				Int int `json:"int"`
 			}{},
+			&struct {
+				Int interface{} `json:"int"`
+			}{},
 		},
 		TypeMismatch: []interface{}{
 			&struct {
@@ -192,6 +195,9 @@ func TestNestedObject(t *testing.T) {
 			}{},
 			&struct {
 				Obj interface{} `json:"obj"`
+			}{},
+			&struct {
+				Obj map[string]interface{} `json:"obj"`
 			}{},
 		},
 		TypeMismatch: []interface{}{
