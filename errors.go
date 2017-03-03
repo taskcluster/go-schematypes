@@ -70,7 +70,7 @@ func singleIssue(path, message string, args ...interface{}) *ValidationError {
 }
 
 func (e *ValidationError) Error() string {
-	msg := "Validation error: "
+	msg := "ValidationError: "
 	for _, issue := range e.issues {
 		msg += strings.Replace(issue.message, "{path}", "root"+issue.path, -1) + ", "
 	}
