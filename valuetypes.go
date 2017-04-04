@@ -5,6 +5,8 @@ import (
 	"net/url"
 	"reflect"
 	"regexp"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -513,4 +515,124 @@ func (d DateTime) Map(data interface{}, target interface{}) error {
 	default:
 		return ErrTypeMismatch
 	}
+}
+
+// Duration schema type for duration as integer seconds or string on the form:
+//
+//     /[-+]? (\d+ d(ays?)?)? (\d+ h((ours?)?|r))? (\d+ m(in(untes?)?)?)?/
+//
+// This allows for a lot of human readable time durations, examples:
+//
+//    '31 days 2 hours 5 min'
+//    '5 min'
+//    '2 hours 5 min'
+//    '+ 3 minutes'
+//    '- 2 hr'
+//    '- 3 days'
+//    '1d2h3m'
+//    '   1  day  2 hour  1 minutes '
+type Duration struct {
+	MetaData
+	AllowNegative bool
+}
+
+var durationPattern = strings.Join([]string{
+	`(?:\s*(\d+)\s*d(?:ays?)?)?`,
+	`(?:\s*(\d+)\s*h(?:ours?|r)?)?`,
+	`(?:\s*(\d+)\s*m(?:in(?:utes?)?)?)?`,
+}, "")
+var durationRegexp = regexp.MustCompile(`^\s*` + durationPattern + `\s*$`)
+var signedDurationRegexp = regexp.MustCompile(`^\s*([+-])?` + durationPattern + `\s*$`)
+
+// Schema returns a JSON representation of the schema.
+func (d Duration) Schema() map[string]interface{} {
+	m := d.schema()
+	m["type"] = []string{"integer", "string"}
+	if d.AllowNegative {
+		m["pattern"] = signedDurationRegexp.String()
+	} else {
+		m["pattern"] = durationRegexp.String()
+	}
+	return m
+}
+
+// Validate the given data, this will return nil if data satisfies this schema.
+// Otherwise, Validate(data) returns a ValidationError instance.
+func (d Duration) Validate(data interface{}) error {
+	v := reflect.ValueOf(data)
+	switch v.Kind() {
+	case reflect.Float32, reflect.Float64:
+		if float64(int64(v.Float())) != v.Float() {
+			return singleIssue("", "Expected an integer duration at {path}")
+		}
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+	case reflect.String:
+		var pattern *regexp.Regexp
+		if d.AllowNegative {
+			pattern = signedDurationRegexp
+		} else {
+			pattern = durationRegexp
+		}
+		if !pattern.MatchString(v.String()) {
+			return singleIssue("", "String '%s' at {path} doesn't match duration pattern '%s'",
+				v.String(), pattern.String())
+		}
+	default:
+		return singleIssue("", "Expected an integer or string duration at {path}")
+	}
+	return nil
+}
+
+var typeOfDuration = reflect.TypeOf((*time.Duration)(nil)).Elem()
+
+// Map takes data, validates and maps it into the target reference.
+func (d Duration) Map(data interface{}, target interface{}) error {
+	if err := d.Validate(data); err != nil {
+		return err
+	}
+
+	ptr := reflect.ValueOf(target)
+	if ptr.Kind() != reflect.Ptr {
+		return ErrTypeMismatch
+	}
+	val := ptr.Elem()
+
+	// find duration as result
+	v := reflect.ValueOf(data)
+	var result time.Duration
+	switch v.Kind() {
+	case reflect.Float32, reflect.Float64:
+		result = time.Duration(v.Float()) * time.Second
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		result = time.Duration(v.Int()) * time.Second
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		result = time.Duration(v.Uint()) * time.Second
+	case reflect.String:
+		// always parse using the signed regexp, as it makes no difference once validated
+		m := signedDurationRegexp.FindStringSubmatch(v.String())
+		if m == nil {
+			panic("duration has invalid format, this should have returned an error earlier")
+		}
+
+		sign := time.Duration(1)
+		if m[1] == "-" {
+			sign = -1
+		}
+		days, _ := strconv.Atoi(m[2])
+		hours, _ := strconv.Atoi(m[3])
+		minutes, _ := strconv.Atoi(m[4])
+		result = sign *
+			(time.Duration(days)*24*60*time.Minute +
+				time.Duration(hours)*60*time.Minute +
+				time.Duration(minutes)*time.Minute)
+	default:
+		panic("duration is not valid, this should have returned an error earlier")
+	}
+
+	if val.Type() != typeOfDuration {
+		return ErrTypeMismatch
+	}
+	val.Set(reflect.ValueOf(result))
+	return nil
 }
