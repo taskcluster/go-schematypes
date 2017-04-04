@@ -533,22 +533,26 @@ func (d DateTime) Map(data interface{}, target interface{}) error {
 //    '   1  day  2 hour  1 minutes '
 type Duration struct {
 	MetaData
+	AllowNegative bool
 }
 
 var durationPattern = strings.Join([]string{
-	`^\s*([+-])?`,
 	`(?:\s*(\d+)\s*d(?:ays?)?)?`,
 	`(?:\s*(\d+)\s*h(?:ours?|r)?)?`,
 	`(?:\s*(\d+)\s*m(?:in(?:utes?)?)?)?`,
-	`\s*$`,
 }, "")
-var durationRegexp = regexp.MustCompile(durationPattern)
+var durationRegexp = regexp.MustCompile(`^\s*` + durationPattern + `\s*$`)
+var signedDurationRegexp = regexp.MustCompile(`^\s*([+-])?` + durationPattern + `\s*$`)
 
 // Schema returns a JSON representation of the schema.
 func (d Duration) Schema() map[string]interface{} {
 	m := d.schema()
 	m["type"] = []string{"integer", "string"}
-	m["pattern"] = durationPattern
+	if d.AllowNegative {
+		m["pattern"] = signedDurationRegexp.String()
+	} else {
+		m["pattern"] = durationRegexp.String()
+	}
 	return m
 }
 
@@ -564,9 +568,15 @@ func (d Duration) Validate(data interface{}) error {
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 	case reflect.String:
-		if !durationRegexp.MatchString(v.String()) {
+		var pattern *regexp.Regexp
+		if d.AllowNegative {
+			pattern = signedDurationRegexp
+		} else {
+			pattern = durationRegexp
+		}
+		if !pattern.MatchString(v.String()) {
 			return singleIssue("", "String '%s' at {path} doesn't match duration pattern '%s'",
-				v.String(), durationPattern)
+				v.String(), pattern.String())
 		}
 	default:
 		return singleIssue("", "Expected an integer or string duration at {path}")
@@ -599,7 +609,8 @@ func (d Duration) Map(data interface{}, target interface{}) error {
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
 		result = time.Duration(v.Uint()) * time.Second
 	case reflect.String:
-		m := durationRegexp.FindStringSubmatch(v.String())
+		// always parse using the signed regexp, as it makes no difference once validated
+		m := signedDurationRegexp.FindStringSubmatch(v.String())
 		if m == nil {
 			panic("duration has invalid format, this should have returned an error earlier")
 		}

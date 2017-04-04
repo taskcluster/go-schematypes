@@ -512,13 +512,14 @@ func TestDate(t *testing.T) {
 }
 
 type durationTestCase struct {
-	Result time.Duration
-	Input  string
+	Result        time.Duration
+	Input         string
+	AllowNegative bool
 }
 
 func (c durationTestCase) Test(t *testing.T) {
 	var d time.Duration
-	MustValidateAndMap(Duration{}, c.Input, &d)
+	MustValidateAndMap(Duration{AllowNegative: c.AllowNegative}, c.Input, &d)
 	if d != c.Result {
 		t.Errorf("Expected: %d but got %d from %s", c.Result, d, c.Input)
 	}
@@ -570,15 +571,26 @@ func TestDuration(t *testing.T) {
 		Result: 5*24*time.Hour + 4*time.Hour + 5*time.Minute,
 		Input:  "5days4hours5minutes",
 	}.Test(t)
+	durationTestCase{
+		Result:        -(5*24*time.Hour + 4*time.Hour + 5*time.Minute),
+		Input:         "- 5days4hours5minutes",
+		AllowNegative: true,
+	}.Test(t)
+	durationTestCase{
+		Result:        (5*24*time.Hour + 4*time.Hour + 5*time.Minute),
+		Input:         "+ 5days4hours5minutes",
+		AllowNegative: true,
+	}.Test(t)
 
 	var duration time.Duration
-	pattern, _ := json.Marshal(durationPattern)
+	pattern, _ := json.Marshal(signedDurationRegexp.String())
 	testCase{
 		Schema: Duration{
 			MetaData: MetaData{
 				Title:       "my-title",
 				Description: "my-description",
 			},
+			AllowNegative: true,
 		},
 		Match: `{
       "type": ["integer", "string"],
