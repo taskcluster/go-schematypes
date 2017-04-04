@@ -1,6 +1,7 @@
 package schematypes
 
 import (
+	"encoding/json"
 	"net/url"
 	"testing"
 	"time"
@@ -481,6 +482,123 @@ func TestDate(t *testing.T) {
 			pString,
 			&dateTime,
 			&pDateTime,
+		},
+		TypeMismatch: []interface{}{
+			aInt8,
+			aInt16,
+			aInt32,
+			aInt64,
+			aUint8,
+			aUint16,
+			aUint32,
+			aUint64,
+			aString,
+			aFloat32,
+			aFloat64,
+			aBool,
+			pInt8,
+			pInt16,
+			pInt32,
+			pInt64,
+			pUint8,
+			pUint16,
+			pUint32,
+			pUint64,
+			pFloat32,
+			pFloat64,
+			pBool,
+		},
+	}.Test(t)
+}
+
+type durationTestCase struct {
+	Result time.Duration
+	Input  string
+}
+
+func (c durationTestCase) Test(t *testing.T) {
+	var d time.Duration
+	MustValidateAndMap(Duration{}, c.Input, &d)
+	if d != c.Result {
+		t.Errorf("Expected: %d but got %d from %s", c.Result, d, c.Input)
+	}
+}
+
+func TestDuration(t *testing.T) {
+
+	durationTestCase{
+		Result: 5 * time.Minute,
+		Input:  "5 minutes",
+	}.Test(t)
+	durationTestCase{
+		Result: 4*time.Hour + 5*time.Minute,
+		Input:  "4h 5 minutes",
+	}.Test(t)
+	durationTestCase{
+		Result: 4*time.Hour + 5*time.Minute,
+		Input:  "4h5m",
+	}.Test(t)
+	durationTestCase{
+		Result: 4*time.Hour + 5*time.Minute,
+		Input:  "   4 hr 5   min",
+	}.Test(t)
+	durationTestCase{
+		Result: 4*time.Hour + 5*time.Minute,
+		Input:  "   4 hr 05   minute",
+	}.Test(t)
+	durationTestCase{
+		Result: 4*time.Hour + 5*time.Minute,
+		Input:  "   4 hours 5   minutes",
+	}.Test(t)
+	durationTestCase{
+		Result: 5*24*time.Hour + 4*time.Hour + 5*time.Minute,
+		Input:  "5d   4 hours 5   minutes",
+	}.Test(t)
+	durationTestCase{
+		Result: 5*24*time.Hour + 4*time.Hour + 5*time.Minute,
+		Input:  "  5d   4 hours 5   minutes",
+	}.Test(t)
+	durationTestCase{
+		Result: 5*24*time.Hour + 4*time.Hour + 5*time.Minute,
+		Input:  "  5  day   4 hours 5   minutes",
+	}.Test(t)
+	durationTestCase{
+		Result: 5*24*time.Hour + 4*time.Hour + 5*time.Minute,
+		Input:  "  5  days   4 hours 5   minutes",
+	}.Test(t)
+	durationTestCase{
+		Result: 5*24*time.Hour + 4*time.Hour + 5*time.Minute,
+		Input:  "5days4hours5minutes",
+	}.Test(t)
+
+	var duration time.Duration
+	pattern, _ := json.Marshal(durationPattern)
+	testCase{
+		Schema: Duration{
+			MetaData: MetaData{
+				Title:       "my-title",
+				Description: "my-description",
+			},
+		},
+		Match: `{
+      "type": ["integer", "string"],
+      "title": "my-title",
+      "description": "my-description",
+      "pattern": ` + string(pattern) + `
+    }`,
+		Valid: []string{
+			"242", "-254",
+			"\"\"",
+			"\"-\"", "\"+\"",
+			"\"1 day 2 hours 3 minutes\"",
+		},
+		Invalid: []string{
+			"{}", "[]", "null", "true", "false",
+			"\"asda dsfsf\"", "\"asd4\"", "\"A\"", "\"azS\"", "\"c\"", "\"d\"",
+			"\"f\"",
+		},
+		TypeMatch: []interface{}{
+			&duration,
 		},
 		TypeMismatch: []interface{}{
 			aInt8,
