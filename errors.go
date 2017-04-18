@@ -16,8 +16,19 @@ type ValidationIssue struct {
 	path    string
 }
 
-// Prefix will add a prefix to the path to property that had an issue.
-func (v *ValidationIssue) Prefix(prefix string, args ...interface{}) ValidationIssue {
+// String returns a human readable string representation of the issue
+func (v *ValidationIssue) String() string {
+	return strings.Replace(v.message, "{path}", v.path, -1)
+}
+
+// Path returns the a path to the issue, on the form:
+//   rootName.dictionary["other-key"].array[44].property
+func (v *ValidationIssue) Path() string {
+	return v.path
+}
+
+// prefix will add a prefix to the path to property that had an issue.
+func (v *ValidationIssue) prefix(prefix string, args ...interface{}) ValidationIssue {
 	return ValidationIssue{
 		message: v.message,
 		path:    fmt.Sprintf(prefix, args...) + v.path,
@@ -30,9 +41,17 @@ type ValidationError struct {
 	issues []ValidationIssue
 }
 
-// Issues returns the validation issues
-func (e *ValidationError) Issues() []ValidationIssue {
-	return e.issues
+// Issues returns the validation issues with given rootName as the start of the
+// Path or "root" if rootName is the empty string.
+func (e *ValidationError) Issues(rootName string) []ValidationIssue {
+	if rootName == "" {
+		rootName = "root"
+	}
+	issues := make([]ValidationIssue, len(e.issues))
+	for i, issue := range e.issues {
+		issues[i] = issue.prefix("%s", rootName)
+	}
+	return issues
 }
 
 func (e *ValidationError) addIssue(path, message string, args ...interface{}) {
@@ -52,14 +71,14 @@ func (e *ValidationError) addIssuesWithPrefix(err error, prefix string, args ...
 	}
 	if err, ok := err.(*ValidationError); ok {
 		for _, issue := range err.issues {
-			e.issues = append(e.issues, issue.Prefix(prefix, args...))
+			e.issues = append(e.issues, issue.prefix(prefix, args...))
 		}
 	} else {
 		issue := ValidationIssue{
 			message: fmt.Sprintf("Error: %s at {path}", err.Error()),
 			path:    "",
 		}
-		e.issues = append(e.issues, issue.Prefix(prefix, args...))
+		e.issues = append(e.issues, issue.prefix(prefix, args...))
 	}
 }
 
