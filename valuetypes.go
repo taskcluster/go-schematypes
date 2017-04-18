@@ -287,7 +287,7 @@ func (s String) Validate(data interface{}) error {
 	}
 	if s.Pattern != "" {
 		if match, _ := regexp.MatchString(s.Pattern, value); !match {
-			e.addIssue("", "String '%s' doesn't match regular expression '%s'",
+			e.addIssue("", "String '%s' at {path} doesn't match regular expression '%s'",
 				value, s.Pattern)
 		}
 	}
