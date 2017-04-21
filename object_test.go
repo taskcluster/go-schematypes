@@ -5,10 +5,8 @@ import "testing"
 func TestObject(t *testing.T) {
 	testCase{
 		Schema: Object{
-			MetaData: MetaData{
-				Title:       "my-title-1",
-				Description: "my-description-1",
-			},
+			Title:       "my-title-1",
+			Description: "my-description-1",
 			Properties: Properties{
 				"int": Integer{
 					Title:       "my-title-2",
@@ -66,10 +64,8 @@ func TestObject(t *testing.T) {
 func TestOptionalPropertyObject(t *testing.T) {
 	testCase{
 		Schema: Object{
-			MetaData: MetaData{
-				Title:       "my-title-1",
-				Description: "my-description-1",
-			},
+			Title:       "my-title-1",
+			Description: "my-description-1",
 			Properties: Properties{
 				"int": Integer{
 					Title:       "my-title-2",
@@ -122,16 +118,12 @@ func TestOptionalPropertyObject(t *testing.T) {
 func TestNestedObject(t *testing.T) {
 	testCase{
 		Schema: Object{
-			MetaData: MetaData{
-				Title:       "my-title-3",
-				Description: "my-description-3",
-			},
+			Title:       "my-title-3",
+			Description: "my-description-3",
 			Properties: Properties{
 				"obj": Object{
-					MetaData: MetaData{
-						Title:       "my-title-1",
-						Description: "my-description-1",
-					},
+					Title:       "my-title-1",
+					Description: "my-description-1",
 					Properties: Properties{
 						"int": Integer{
 							Title:       "my-title-2",

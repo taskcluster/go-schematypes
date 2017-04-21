@@ -5,10 +5,8 @@ import "testing"
 func TestIntegerArray(t *testing.T) {
 	testCase{
 		Schema: Array{
-			MetaData: MetaData{
-				Title:       "my-title-1",
-				Description: "my-description-1",
-			},
+			Title:       "my-title-1",
+			Description: "my-description-1",
 			Items: Integer{
 				Title:       "my-title-2",
 				Description: "my-description-2",
@@ -51,10 +49,8 @@ func TestIntegerArray(t *testing.T) {
 func TestIntegerArrayEmpty(t *testing.T) {
 	testCase{
 		Schema: Array{
-			MetaData: MetaData{
-				Title:       "my-title-1",
-				Description: "my-description-1",
-			},
+			Title:       "my-title-1",
+			Description: "my-description-1",
 			Items: Integer{
 				Title:       "my-title-2",
 				Description: "my-description-2",
@@ -94,10 +90,8 @@ func TestIntegerArrayEmpty(t *testing.T) {
 func TestUniqueIntegerArray(t *testing.T) {
 	testCase{
 		Schema: Array{
-			MetaData: MetaData{
-				Title:       "my-title-1",
-				Description: "my-description-1",
-			},
+			Title:       "my-title-1",
+			Description: "my-description-1",
 			Items: Integer{
 				Title:       "my-title-2",
 				Description: "my-description-2",
