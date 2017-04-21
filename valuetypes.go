@@ -19,14 +19,15 @@ const (
 
 // The Integer struct represents a JSON schema for an integer.
 type Integer struct {
-	MetaData
-	Minimum int64
-	Maximum int64
+	Title       string
+	Description string
+	Minimum     int64
+	Maximum     int64
 }
 
 // Schema returns a JSON representation of the schema.
 func (i Integer) Schema() map[string]interface{} {
-	m := i.schema()
+	m := makeMetaData(i.Title, i.Description)
 	m["type"] = typeInteger
 	if i.Minimum != math.MinInt64 {
 		m["minimum"] = i.Minimum
@@ -142,14 +143,15 @@ func (i Integer) Map(data interface{}, target interface{}) error {
 
 // Number schema type.
 type Number struct {
-	MetaData
-	Minimum float64
-	Maximum float64
+	Title       string
+	Description string
+	Minimum     float64
+	Maximum     float64
 }
 
 // Schema returns a JSON representation of the schema.
 func (n Number) Schema() map[string]interface{} {
-	m := n.schema()
+	m := makeMetaData(n.Title, n.Description)
 	m["type"] = typeNumber
 	if n.Minimum != -math.MaxFloat64 {
 		m["minimum"] = n.Minimum
@@ -202,11 +204,14 @@ func (n Number) Map(data interface{}, target interface{}) error {
 }
 
 // Boolean schema type.
-type Boolean struct{ MetaData }
+type Boolean struct {
+	Title       string
+	Description string
+}
 
 // Schema returns a JSON representation of the schema.
 func (b Boolean) Schema() map[string]interface{} {
-	m := b.schema()
+	m := makeMetaData(b.Title, b.Description)
 	m["type"] = typeBoolean
 	return m
 }
@@ -243,7 +248,8 @@ func (b Boolean) Map(data interface{}, target interface{}) error {
 
 // String schema type.
 type String struct {
-	MetaData
+	Title         string
+	Description   string
 	MinimumLength int
 	MaximumLength int
 	Pattern       string
@@ -251,7 +257,7 @@ type String struct {
 
 // Schema returns a JSON representation of the schema.
 func (s String) Schema() map[string]interface{} {
-	m := s.schema()
+	m := makeMetaData(s.Title, s.Description)
 	m["type"] = typeString
 	if s.MinimumLength != 0 {
 		m["minLength"] = s.MinimumLength
@@ -321,13 +327,14 @@ func (s String) Map(data interface{}, target interface{}) error {
 
 // StringEnum schema type for enums of strings.
 type StringEnum struct {
-	MetaData
-	Options []string
+	Title       string
+	Description string
+	Options     []string
 }
 
 // Schema returns a JSON representation of the schema.
 func (s StringEnum) Schema() map[string]interface{} {
-	m := s.schema()
+	m := makeMetaData(s.Title, s.Description)
 	m["type"] = typeString
 	m["enum"] = s.Options
 	return m
@@ -375,13 +382,14 @@ func (s StringEnum) Map(data interface{}, target interface{}) error {
 
 // URI schema type for strings with format: uri.
 type URI struct {
-	MetaData
-	Options []string
+	Title       string
+	Description string
+	Options     []string
 }
 
 // Schema returns a JSON representation of the schema.
 func (s URI) Schema() map[string]interface{} {
-	m := s.schema()
+	m := makeMetaData(s.Title, s.Description)
 	m["type"] = typeString
 	m["format"] = "uri"
 	return m
@@ -444,12 +452,13 @@ func (s URI) Map(data interface{}, target interface{}) error {
 
 // DateTime schema type for strings with format: date-time.
 type DateTime struct {
-	MetaData
+	Title       string
+	Description string
 }
 
 // Schema returns a JSON representation of the schema.
 func (d DateTime) Schema() map[string]interface{} {
-	m := d.schema()
+	m := makeMetaData(d.Title, d.Description)
 	m["type"] = typeString
 	m["format"] = "date-time"
 	return m
@@ -532,7 +541,8 @@ func (d DateTime) Map(data interface{}, target interface{}) error {
 //    '1d2h3m'
 //    '   1  day  2 hour  1 minutes '
 type Duration struct {
-	MetaData
+	Title         string
+	Description   string
 	AllowNegative bool
 }
 
@@ -546,7 +556,7 @@ var signedDurationRegexp = regexp.MustCompile(`^\s*([+-])?` + durationPattern + 
 
 // Schema returns a JSON representation of the schema.
 func (d Duration) Schema() map[string]interface{} {
-	m := d.schema()
+	m := makeMetaData(d.Title, d.Description)
 	m["type"] = []string{"integer", "string"}
 	if d.AllowNegative {
 		m["pattern"] = signedDurationRegexp.String()
