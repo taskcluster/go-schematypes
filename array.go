@@ -7,14 +7,15 @@ import (
 
 // An Array struct represents the JSON schema for an array.
 type Array struct {
-	MetaData
-	Items  Schema
-	Unique bool
+	Title       string
+	Description string
+	Items       Schema
+	Unique      bool
 }
 
 // Schema returns a JSON representation of the schema.
 func (a Array) Schema() map[string]interface{} {
-	m := a.schema()
+	m := makeMetaData(a.Title, a.Description)
 	m["type"] = "array"
 	m["items"] = a.Items.Schema()
 	if a.Unique {

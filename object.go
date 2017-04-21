@@ -13,7 +13,8 @@ type Properties map[string]Schema
 
 // Object specifies schema for an object.
 type Object struct {
-	MetaData
+	Title                string
+	Description          string
 	Properties           Properties
 	AdditionalProperties bool
 	Required             []string
@@ -21,7 +22,7 @@ type Object struct {
 
 // Schema returns a JSON representation of the schema.
 func (o Object) Schema() map[string]interface{} {
-	m := o.schema()
+	m := makeMetaData(o.Title, o.Description)
 	m["type"] = "object"
 	if len(o.Properties) > 0 {
 		props := make(map[string]map[string]interface{})
