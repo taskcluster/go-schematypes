@@ -11,12 +11,10 @@ func TestObject(t *testing.T) {
 			},
 			Properties: Properties{
 				"int": Integer{
-					MetaData: MetaData{
-						Title:       "my-title-2",
-						Description: "my-description-2",
-					},
-					Minimum: -240,
-					Maximum: 240,
+					Title:       "my-title-2",
+					Description: "my-description-2",
+					Minimum:     -240,
+					Maximum:     240,
 				},
 			},
 			Required: []string{"int"},
@@ -74,12 +72,10 @@ func TestOptionalPropertyObject(t *testing.T) {
 			},
 			Properties: Properties{
 				"int": Integer{
-					MetaData: MetaData{
-						Title:       "my-title-2",
-						Description: "my-description-2",
-					},
-					Minimum: -240,
-					Maximum: 240,
+					Title:       "my-title-2",
+					Description: "my-description-2",
+					Minimum:     -240,
+					Maximum:     240,
 				},
 			},
 		},
@@ -138,12 +134,10 @@ func TestNestedObject(t *testing.T) {
 					},
 					Properties: Properties{
 						"int": Integer{
-							MetaData: MetaData{
-								Title:       "my-title-2",
-								Description: "my-description-2",
-							},
-							Minimum: -240,
-							Maximum: 240,
+							Title:       "my-title-2",
+							Description: "my-description-2",
+							Minimum:     -240,
+							Maximum:     240,
 						},
 					},
 					Required: []string{"int"},

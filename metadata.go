@@ -16,3 +16,14 @@ func (s *MetaData) schema() map[string]interface{} {
 	}
 	return m
 }
+
+func makeMetaData(title, description string) map[string]interface{} {
+	m := make(map[string]interface{})
+	if title != "" {
+		m["title"] = title
+	}
+	if description != "" {
+		m["description"] = description
+	}
+	return m
+}

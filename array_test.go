@@ -10,12 +10,10 @@ func TestIntegerArray(t *testing.T) {
 				Description: "my-description-1",
 			},
 			Items: Integer{
-				MetaData: MetaData{
-					Title:       "my-title-2",
-					Description: "my-description-2",
-				},
-				Minimum: -240,
-				Maximum: 240,
+				Title:       "my-title-2",
+				Description: "my-description-2",
+				Minimum:     -240,
+				Maximum:     240,
 			},
 		},
 		Match: `{
@@ -58,12 +56,10 @@ func TestIntegerArrayEmpty(t *testing.T) {
 				Description: "my-description-1",
 			},
 			Items: Integer{
-				MetaData: MetaData{
-					Title:       "my-title-2",
-					Description: "my-description-2",
-				},
-				Minimum: -240,
-				Maximum: 240,
+				Title:       "my-title-2",
+				Description: "my-description-2",
+				Minimum:     -240,
+				Maximum:     240,
 			},
 		},
 		Match: `{
@@ -103,12 +99,10 @@ func TestUniqueIntegerArray(t *testing.T) {
 				Description: "my-description-1",
 			},
 			Items: Integer{
-				MetaData: MetaData{
-					Title:       "my-title-2",
-					Description: "my-description-2",
-				},
-				Minimum: -240,
-				Maximum: 240,
+				Title:       "my-title-2",
+				Description: "my-description-2",
+				Minimum:     -240,
+				Maximum:     240,
 			},
 			Unique: true,
 		},
