@@ -41,12 +41,10 @@ var (
 func TestInteger(t *testing.T) {
 	testCase{
 		Schema: Integer{
-			MetaData: MetaData{
-				Title:       "my-title",
-				Description: "my-description",
-			},
-			Minimum: -240,
-			Maximum: 240,
+			Title:       "my-title",
+			Description: "my-description",
+			Minimum:     -240,
+			Maximum:     240,
 		},
 		Match: `{
       "type": "integer",
@@ -104,12 +102,10 @@ func TestNumber(t *testing.T) {
 	var h int8
 	testCase{
 		Schema: Number{
-			MetaData: MetaData{
-				Title:       "my-title",
-				Description: "my-description",
-			},
-			Minimum: -240.5,
-			Maximum: 240,
+			Title:       "my-title",
+			Description: "my-description",
+			Minimum:     -240.5,
+			Maximum:     240,
 		},
 		Match: `{
       "type": "number",
@@ -136,10 +132,8 @@ func TestNumber(t *testing.T) {
 func TestBoolean(t *testing.T) {
 	testCase{
 		Schema: Boolean{
-			MetaData: MetaData{
-				Title:       "my-title",
-				Description: "my-description",
-			},
+			Title:       "my-title",
+			Description: "my-description",
 		},
 		Match: `{
       "type": "boolean",
@@ -186,10 +180,8 @@ func TestBoolean(t *testing.T) {
 func TestString(t *testing.T) {
 	testCase{
 		Schema: String{
-			MetaData: MetaData{
-				Title:       "my-title",
-				Description: "my-description",
-			},
+			Title:       "my-title",
+			Description: "my-description",
 		},
 		Match: `{
       "type": "string",
@@ -236,10 +228,8 @@ func TestString(t *testing.T) {
 func TestStringLength(t *testing.T) {
 	testCase{
 		Schema: String{
-			MetaData: MetaData{
-				Title:       "my-title",
-				Description: "my-description",
-			},
+			Title:         "my-title",
+			Description:   "my-description",
 			MinimumLength: 5,
 			MaximumLength: 10,
 		},
@@ -291,11 +281,9 @@ func TestStringLength(t *testing.T) {
 func TestStringPattern(t *testing.T) {
 	testCase{
 		Schema: String{
-			MetaData: MetaData{
-				Title:       "my-title",
-				Description: "my-description",
-			},
-			Pattern: "^[a-z]+$",
+			Title:       "my-title",
+			Description: "my-description",
+			Pattern:     "^[a-z]+$",
 		},
 		Match: `{
       "type": "string",
@@ -344,10 +332,8 @@ func TestStringPattern(t *testing.T) {
 func TestStringEnum(t *testing.T) {
 	testCase{
 		Schema: StringEnum{
-			MetaData: MetaData{
-				Title:       "my-title",
-				Description: "my-description",
-			},
+			Title:       "my-title",
+			Description: "my-description",
 			Options: []string{
 				"a", "b", "c--",
 			},
@@ -402,10 +388,8 @@ func TestURI(t *testing.T) {
 	var pu *url.URL
 	testCase{
 		Schema: URI{
-			MetaData: MetaData{
-				Title:       "my-title",
-				Description: "my-description",
-			},
+			Title:       "my-title",
+			Description: "my-description",
 		},
 		Match: `{
       "type": "string",
@@ -459,10 +443,8 @@ func TestDate(t *testing.T) {
 	var pDateTime *time.Time
 	testCase{
 		Schema: DateTime{
-			MetaData: MetaData{
-				Title:       "my-title",
-				Description: "my-description",
-			},
+			Title:       "my-title",
+			Description: "my-description",
 		},
 		Match: `{
       "type": "string",
@@ -586,10 +568,8 @@ func TestDuration(t *testing.T) {
 	pattern, _ := json.Marshal(signedDurationRegexp.String())
 	testCase{
 		Schema: Duration{
-			MetaData: MetaData{
-				Title:       "my-title",
-				Description: "my-description",
-			},
+			Title:         "my-title",
+			Description:   "my-description",
 			AllowNegative: true,
 		},
 		Match: `{

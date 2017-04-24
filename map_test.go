@@ -6,17 +6,13 @@ func TestMapInteger(t *testing.T) {
 	var smap map[string]int
 	testCase{
 		Schema: Map{
-			MetaData: MetaData{
-				Title:       "my-title-1",
-				Description: "my-description-1",
-			},
+			Title:       "my-title-1",
+			Description: "my-description-1",
 			Values: Integer{
-				MetaData: MetaData{
-					Title:       "my-title-2",
-					Description: "my-description-2",
-				},
-				Minimum: -240,
-				Maximum: 240,
+				Title:       "my-title-2",
+				Description: "my-description-2",
+				Minimum:     -240,
+				Maximum:     240,
 			},
 		},
 		Match: `{
@@ -58,15 +54,11 @@ func TestMapString(t *testing.T) {
 	var smap map[string]string
 	testCase{
 		Schema: Map{
-			MetaData: MetaData{
-				Title:       "my-title-1",
-				Description: "my-description-1",
-			},
+			Title:       "my-title-1",
+			Description: "my-description-1",
 			Values: String{
-				MetaData: MetaData{
-					Title:       "my-title-2",
-					Description: "my-description-2",
-				},
+				Title:       "my-title-2",
+				Description: "my-description-2",
 			},
 		},
 		Match: `{

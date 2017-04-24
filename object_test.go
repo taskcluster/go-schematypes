@@ -5,18 +5,14 @@ import "testing"
 func TestObject(t *testing.T) {
 	testCase{
 		Schema: Object{
-			MetaData: MetaData{
-				Title:       "my-title-1",
-				Description: "my-description-1",
-			},
+			Title:       "my-title-1",
+			Description: "my-description-1",
 			Properties: Properties{
 				"int": Integer{
-					MetaData: MetaData{
-						Title:       "my-title-2",
-						Description: "my-description-2",
-					},
-					Minimum: -240,
-					Maximum: 240,
+					Title:       "my-title-2",
+					Description: "my-description-2",
+					Minimum:     -240,
+					Maximum:     240,
 				},
 			},
 			Required: []string{"int"},
@@ -68,18 +64,14 @@ func TestObject(t *testing.T) {
 func TestOptionalPropertyObject(t *testing.T) {
 	testCase{
 		Schema: Object{
-			MetaData: MetaData{
-				Title:       "my-title-1",
-				Description: "my-description-1",
-			},
+			Title:       "my-title-1",
+			Description: "my-description-1",
 			Properties: Properties{
 				"int": Integer{
-					MetaData: MetaData{
-						Title:       "my-title-2",
-						Description: "my-description-2",
-					},
-					Minimum: -240,
-					Maximum: 240,
+					Title:       "my-title-2",
+					Description: "my-description-2",
+					Minimum:     -240,
+					Maximum:     240,
 				},
 			},
 		},
@@ -126,24 +118,18 @@ func TestOptionalPropertyObject(t *testing.T) {
 func TestNestedObject(t *testing.T) {
 	testCase{
 		Schema: Object{
-			MetaData: MetaData{
-				Title:       "my-title-3",
-				Description: "my-description-3",
-			},
+			Title:       "my-title-3",
+			Description: "my-description-3",
 			Properties: Properties{
 				"obj": Object{
-					MetaData: MetaData{
-						Title:       "my-title-1",
-						Description: "my-description-1",
-					},
+					Title:       "my-title-1",
+					Description: "my-description-1",
 					Properties: Properties{
 						"int": Integer{
-							MetaData: MetaData{
-								Title:       "my-title-2",
-								Description: "my-description-2",
-							},
-							Minimum: -240,
-							Maximum: 240,
+							Title:       "my-title-2",
+							Description: "my-description-2",
+							Minimum:     -240,
+							Maximum:     240,
 						},
 					},
 					Required: []string{"int"},

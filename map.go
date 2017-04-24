@@ -7,7 +7,8 @@ import (
 
 // Map specifies schema for a map from string to values.
 type Map struct {
-	MetaData
+	Title             string
+	Description       string
 	Values            Schema
 	MinimumProperties int64
 	MaximumProperties int64
@@ -15,7 +16,7 @@ type Map struct {
 
 // Schema returns a JSON representation of the schema.
 func (m Map) Schema() map[string]interface{} {
-	s := m.schema()
+	s := makeMetaData(m.Title, m.Description)
 	s["type"] = "object"
 	s["additionalProperties"] = m.Values.Schema()
 	if m.MinimumProperties != 0 {
