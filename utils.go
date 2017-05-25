@@ -12,6 +12,16 @@ func stringContains(list []string, element string) bool {
 	return false
 }
 
+// intContains returns true if list contains element
+func intContains(list []int, element int) bool {
+	for _, s := range list {
+		if s == element {
+			return true
+		}
+	}
+	return false
+}
+
 // MustValidate panics if data doesn't validate against schema
 func MustValidate(schema Schema, data interface{}) {
 	err := schema.Validate(data)
