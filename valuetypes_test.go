@@ -91,6 +91,57 @@ func TestInteger(t *testing.T) {
 	}.Test(t)
 }
 
+func TestIntegerEnum(t *testing.T) {
+	testCase{
+		Schema: IntegerEnum{
+			Title:       "my-title",
+			Description: "my-description",
+			Options:     []int{2, 5, 7, 240},
+		},
+		Match: `{
+      "type": "integer",
+      "title": "my-title",
+      "description": "my-description",
+      "enum": [2, 5, 7, 240]
+    }`,
+		Valid: []string{
+			"2", "5", "7", "240",
+		},
+		Invalid: []string{
+			"0.4", "1.3", "242", "-254", "1", "0", "8",
+		},
+		TypeMatch: []interface{}{
+			pInt16,
+			pInt32,
+			pInt64,
+			pInt,
+			pUint8,
+			pUint16,
+			pUint32,
+			pUint64,
+		},
+		TypeMismatch: []interface{}{
+			aInt8,
+			aInt16,
+			aInt32,
+			aInt64,
+			aUint8,
+			aUint16,
+			aUint32,
+			aUint64,
+			aString,
+			aFloat32,
+			aFloat64,
+			aBool,
+			pInt8,
+			pString,
+			pFloat32,
+			pFloat64,
+			pBool,
+		},
+	}.Test(t)
+}
+
 func TestNumber(t *testing.T) {
 	var a float64
 	var b float32

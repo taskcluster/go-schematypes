@@ -98,17 +98,17 @@ func (i Integer) Map(data interface{}, target interface{}) error {
 
 	switch val.Kind() {
 	case reflect.Int8:
-		if i.Minimum < math.MinInt8 && i.Maximum > math.MaxInt8 {
+		if i.Minimum < math.MinInt8 || i.Maximum > math.MaxInt8 {
 			return ErrTypeMismatch
 		}
 		fallthrough
 	case reflect.Int16:
-		if i.Minimum < math.MinInt16 && i.Maximum > math.MaxInt16 {
+		if i.Minimum < math.MinInt16 || i.Maximum > math.MaxInt16 {
 			return ErrTypeMismatch
 		}
 		fallthrough
 	case reflect.Int32, reflect.Int:
-		if i.Minimum < math.MinInt32 && i.Maximum > math.MaxInt32 {
+		if i.Minimum < math.MinInt32 || i.Maximum > math.MaxInt32 {
 			return ErrTypeMismatch
 		}
 		fallthrough
@@ -116,17 +116,17 @@ func (i Integer) Map(data interface{}, target interface{}) error {
 		val.SetInt(value)
 		return nil
 	case reflect.Uint8:
-		if i.Minimum < 0 && i.Maximum > math.MaxUint8 {
+		if i.Minimum < 0 || i.Maximum > math.MaxUint8 {
 			return ErrTypeMismatch
 		}
 		fallthrough
 	case reflect.Uint16:
-		if i.Minimum < 0 && i.Maximum > math.MaxUint16 {
+		if i.Minimum < 0 || i.Maximum > math.MaxUint16 {
 			return ErrTypeMismatch
 		}
 		fallthrough
 	case reflect.Uint32, reflect.Uint:
-		if i.Minimum < 0 && i.Maximum > math.MaxUint32 {
+		if i.Minimum < 0 || i.Maximum > math.MaxUint32 {
 			return ErrTypeMismatch
 		}
 		fallthrough
@@ -139,6 +139,80 @@ func (i Integer) Map(data interface{}, target interface{}) error {
 	default:
 		return ErrTypeMismatch
 	}
+}
+
+// IntegerEnum schema type for enums of integers.
+type IntegerEnum struct {
+	Title       string
+	Description string
+	Options     []int
+}
+
+// Schema returns a JSON representation of the schema.
+func (s IntegerEnum) Schema() map[string]interface{} {
+	m := makeMetaData(s.Title, s.Description)
+	m["type"] = typeInteger
+	m["enum"] = s.Options
+	return m
+}
+
+// Validate the given data, this will return nil if data satisfies this schema.
+// Otherwise, Validate(data) returns a ValidationError instance.
+func (s IntegerEnum) Validate(data interface{}) error {
+	var value int64
+	v := reflect.ValueOf(data)
+	switch v.Kind() {
+	case reflect.Float32, reflect.Float64:
+		if float64(int64(v.Float())) != v.Float() {
+			return singleIssue("", "Expected an integer at {path}")
+		}
+		value = int64(v.Float())
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		value = v.Int()
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		value = int64(v.Uint())
+	default:
+		return singleIssue("", "Expected an integer at {path}")
+	}
+
+	if !intContains(s.Options, int(value)) {
+		e := &ValidationError{}
+		e.addIssue("",
+			"Value '%d' at {path} is not valid for the enum with options: %v",
+			value, s.Options)
+		return e
+	}
+
+	return nil
+}
+
+// Map takes data, validates and maps it into the target reference.
+func (s IntegerEnum) Map(data interface{}, target interface{}) error {
+	if err := s.Validate(data); err != nil {
+		return err
+	}
+
+	// Find min and max, and create an Integer to use for Map
+	// We need min/max because if the enum contains an option that doesn't fit in
+	// a int8, when we don't want to allow mapping to int8, even if the actually
+	// value in the given instance matches. Map should either always work or
+	// never work, that way it's fairly reliable.
+	var min, max int64
+	min = math.MaxInt64
+	max = math.MinInt64
+	for _, value := range s.Options {
+		if int64(value) < min {
+			min = int64(value)
+		}
+		if int64(value) > max {
+			max = int64(value)
+		}
+	}
+
+	return Integer{
+		Minimum: min,
+		Maximum: max,
+	}.Map(data, target)
 }
 
 // Number schema type.
