@@ -3,6 +3,7 @@ package schematypes
 import "testing"
 
 func TestObject(t *testing.T) {
+	var iface interface{}
 	testCase{
 		Schema: Object{
 			Title:       "my-title-1",
@@ -46,6 +47,7 @@ func TestObject(t *testing.T) {
 			&struct {
 				Int interface{} `json:"int"`
 			}{},
+			&iface,
 		},
 		TypeMismatch: []interface{}{
 			&struct {
