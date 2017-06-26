@@ -106,6 +106,12 @@ func (o Object) Map(data, target interface{}) error {
 	}
 	val := ptr.Elem()
 
+	// Support mapping to interface{}
+	if val.Type() == typeOfEmptyInterface {
+		val.Set(reflect.ValueOf(data))
+		return nil
+	}
+
 	// Use mapStruct if we have a struct type
 	if val.Kind() == reflect.Struct {
 		return o.mapStruct(data.(map[string]interface{}), val)
