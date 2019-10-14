@@ -1,39 +1,44 @@
-version: 0
-metadata:
-  name: go-schematypes
-  description: 'Helpers for testing taskcluster'
-  owner: '{{ event.head.user.email }}'
-  source: '{{ event.head.repo.url }}'
+version: 1
+policy:
+  pullRequests: public
 tasks:
-  - provisionerId: '{{ taskcluster.docker.provisionerId }}'
-    workerType: '{{ taskcluster.docker.workerType }}'
-    extra:
-      github:
-        events:
-          - push
-        branches:
-          - master
-    scopes:
-      - auth:aws-s3:read-write:taskcluster-raw-docs/go-schematypes/
-    payload:
-      maxRunTime: 3600
-      image: taskcluster/upload-project-docs:latest
-      features:
-        taskclusterProxy:
-          true
-      command:
-        - /bin/bash
-        - '--login'
-        - '-cx'
-        - >-
-          git clone {{event.head.repo.url}} repo &&
-          cd repo &&
-          git config advice.detachedHead false &&
-          git checkout {{event.head.sha}} &&
-          export DOCS_PROJECT=go-schematypes DOCS_TIER=libraries DOCS_FOLDER=docs DOCS_README=README.md &&
-          upload-project-docs
-    metadata:
-      name: "go-schematypes docs upload"
-      description: "Upload documentation for this project"
-      owner: '{{ event.head.user.email }}'
-      source: '{{ event.head.repo.url }}'
+  $let:
+    should_run:
+      $if: 'tasks_for == "github-pull-request"'
+      then: {$eval: 'event["action"] in ["opened", "reopened", "synchronize"]'}
+      else: {$eval: 'tasks_for == "github-push"'}
+    clone_url:
+      $if: 'tasks_for == "github-pull-request"'
+      then: ${event.pull_request.head.repo.clone_url}
+      else: ${event.repository.clone_url}
+    sha:
+      $if: 'tasks_for == "github-pull-request"'
+      then: ${event.pull_request.head.sha}
+      else: ${event.after}
+  in:
+  - $if: should_run
+    then:
+      taskId: {$eval: as_slugid("test")}
+      created: {$fromNow: ''}
+      deadline: {$fromNow: '2 hours'}
+      provisionerId: proj-taskcluster
+      workerType: ci
+      payload:
+        maxRunTime: 3600
+        image: golang:1.11.13
+        env:
+          GO111MODULE: on
+        command:
+          - /bin/bash
+          - '-c'
+          - >-
+            git clone ${clone_url} go-schematypes &&
+            cd go-schematypes &&
+            git config advice.detachedHead false &&
+            git checkout ${sha} &&
+            go test -v -race ./...
+      metadata:
+        name: go-schematypes-tests
+        description: runs tests for go-schematypes components
+        owner: taskcluster-internal@mozilla.com
+        source: ${clone_url}
